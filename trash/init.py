@@ -1,5 +1,5 @@
 from sympy import *
-from sympy.geometry import Polygon, Point
+from sympy.geometry import Polygon, Point, Segment
 import matplotlib.pyplot as plt
 
 # Функция для создания правильного многоугольника
@@ -11,28 +11,28 @@ def create_regular_polygon(a, n):
     :return: объект Polygon из sympy
     """
     # Начальная вершина в (0, 0)
-    vertices = [Point(0, 0)]
+    vertices = [Point(-a, 0)]
 
     # Вторая вершина на оси X
-    vertices.append(Point(a, 0))
+    vertices.append(Point(0, 0))
 
     # Центральный угол между сторонами многоугольника
     angle_step = 2 * pi / n
     alpha_init=(3*pi)/2-(angle_step/2)
     # Координаты центра описанной окружности
     R = a / (2 * sin(pi / n))
-    Ry=(R**2-(a/2)**2)**0.5
+    Ry=sqrt(R**2-(a/2)**2)
     #print(R,Ry)
 
     # Вычисляем координаты оставшихся вершин
     for i in range(2, n):
         angle = alpha_init+ angle_step * i
-        x = R * cos(angle) + a/2
+        x = R * cos(angle) - a/2
         y = R * sin(angle) + Ry
-        #print(angle, x, y)
+        #\\print(angle, x, y)
         vertices.append(Point(x, y))
 
-    return Polygon(*vertices)
+    return vertices
 
 
 # Функция для создания произвольного многоугольника по массиву координат
@@ -46,17 +46,20 @@ def create_custom_polygon(coords):
     vertices = [Point(x, y) for x, y in coords]
     return Polygon(*vertices)
 
+#сдвиг многоугольника на вектор
+def shift_polygon(polygon, dx=0, dy=0):
+    # Создаем вектор сдвига
+    shift_vector = Matrix([dx, dy])
 
-# Функция для проверки, что внутренний многоугольник полностью лежит во внешнем
-def is_polygon_inside(inner_polygon, outer_polygon):
-    for vertex in inner_polygon.vertices:
-        if not outer_polygon.encloses_point(vertex):
-            return False
-    return True
+    # Применяем сдвиг ко всем точкам многоугольника
+    shifted_polygon = [point + shift_vector for point in polygon]
 
+    return shifted_polygon
 
 # Функция для визуализации многоугольников с координатной сеткой
-def plot_polygons(inner_polygon, outer_polygon):
+def plot_polygons(pre_inner_polygon, pre_outer_polygon):
+    inner_polygon=Polygon(*pre_inner_polygon)
+    outer_polygon=Polygon(*pre_outer_polygon)
     fig, ax = plt.subplots()
 
     # Внешний многоугольник
@@ -76,10 +79,25 @@ def plot_polygons(inner_polygon, outer_polygon):
     plt.show()
 
 #тест:
-# a=sqrt(2)
-# b=sqrt(2)/3
-a=3
-b=1
-outer_polygon=create_regular_polygon(a, 7)
-inner_polygon = create_regular_polygon(b, 5)
-plot_polygons(inner_polygon, outer_polygon)
+a=sqrt(2)
+b=sqrt(2)/3
+outer_polygon=create_regular_polygon(a, 12)
+inner_polygon = create_regular_polygon(b, 5) #этот экземпляр не меняется и его можно использовать для рассчёта поворотов
+#сдвигаю
+inner_polygon_shift=shift_polygon(inner_polygon, dx=b-a)
+
+plot_polygons(inner_polygon_shift, outer_polygon)
+
+
+"""
+идея функции
+подаём координату точки O (которая 0,0 на fix экземпляре)
+пока что всё лежит на оси x
+нужно рассчитать поворот относительно этой точки по ЧАСОВОЙ СТРЕЛКЕ до второй грани внешнего многоугольника
+ответом должна быть координата точки (можно просто длину, потом всё равно переворачивать), в которую попадает o при вращении
+нужно так же сделать проверку на то, что после этой процедуры не будет никаких лишних пересечений с внешним многоугольником
+"""
+def rotate(coord, inner_polygon, outer_polygon):
+
+
+
