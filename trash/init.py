@@ -76,6 +76,7 @@ def plot_polygons(pre_inner_polygon, pre_outer_polygon):
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)  # Координатная сетка
     ax.axhline(y=0, color='black', linewidth=0.8)  # Ось X
     ax.axvline(x=0, color='black', linewidth=0.8)  # Ось Y
+    ax.plot(sqrt(-8*sqrt(5) - 3*sqrt(5 - sqrt(5))*sqrt(sqrt(5) + 5) - 4*sqrt(2)*sqrt(sqrt(5) + 3) + sqrt(5)*sqrt(5 - sqrt(5))*sqrt(sqrt(5) + 5) + 2*sqrt(10)*sqrt(sqrt(5) + 3) + 24)/(6*sqrt(5 - 2*sqrt(5))), 0, 'ro')
     plt.show()
 
 #тест:
@@ -96,8 +97,18 @@ plot_polygons(inner_polygon_shift, outer_polygon)
 нужно рассчитать поворот относительно этой точки по ЧАСОВОЙ СТРЕЛКЕ до второй грани внешнего многоугольника
 ответом должна быть координата точки (можно просто длину, потом всё равно переворачивать), в которую попадает o при вращении
 нужно так же сделать проверку на то, что после этой процедуры не будет никаких лишних пересечений с внешним многоугольником
+
+coord - просто число, так как смотрим по оси x
 """
 def rotate(coord, inner_polygon, outer_polygon):
+    #пояснение на пояснения\img.png
+    x1_inner, y1_inner = inner_polygon[1]
+    x2_inner, y2_inner = inner_polygon[2]
+    x1_outer, y1_outer = outer_polygon[1]
+    x2_outer, y2_outer = outer_polygon[2]
 
-
-
+    cosa=-(Abs(x2_outer - x1_outer)/((x2_outer - x1_outer)**2 + (y2_outer - y1_outer)**2))
+    #по Т. косинусов inner_2^2=x^2+(outer_1-coord)^2-2*x*(outer_1-coord)*cos(angle)
+    x= symbols('x',positive=True)
+    return (solve((x2_inner-x1_inner)**2+(y2_inner-y1_inner)**2-x**2-(x1_outer-coord)**2+2*x*cosa*Abs(x1_outer-coord), x, minimal=True ))
+print(rotate(0, inner_polygon, outer_polygon))
