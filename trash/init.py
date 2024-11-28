@@ -80,14 +80,15 @@ def plot_polygons(pre_inner_polygon, pre_outer_polygon):
     plt.show()
 
 #тест:
-a=sqrt(2)
-b=sqrt(2)/3
+a=Symbol('a')
+b=Symbol('b')
+
 outer_polygon=create_regular_polygon(a, 12)
 inner_polygon = create_regular_polygon(b, 5) #этот экземпляр не меняется и его можно использовать для рассчёта поворотов
 #сдвигаю
 inner_polygon_shift=shift_polygon(inner_polygon, dx=b-a)
 
-plot_polygons(inner_polygon_shift, outer_polygon)
+#plot_polygons(inner_polygon_shift, outer_polygon)
 
 
 """
@@ -110,5 +111,39 @@ def rotate(coord, inner_polygon, outer_polygon):
     cosa=-(Abs(x2_outer - x1_outer)/((x2_outer - x1_outer)**2 + (y2_outer - y1_outer)**2))
     #по Т. косинусов inner_2^2=x^2+(outer_1-coord)^2-2*x*(outer_1-coord)*cos(angle)
     x= symbols('x',positive=True)
-    return (solve((x2_inner-x1_inner)**2+(y2_inner-y1_inner)**2-x**2-(x1_outer-coord)**2+2*x*cosa*Abs(x1_outer-coord), x, minimal=True ))
-print(rotate(0, inner_polygon, outer_polygon))
+    return {"x":(solve((x2_inner-x1_inner)**2+(y2_inner-y1_inner)**2-x**2-(x1_outer-coord)**2+2*x*cosa*Abs(x1_outer-coord), x, minimal=True )[0]), "cos":cosa]
+
+
+# набор сторон внутреннего многоугольника
+grans=[]
+for i in range(0, len(inner_polygon)):
+    if i!=len(inner_polygon)-1:
+        #магия sympy для того, что бы выражение не тянулось на три строки
+        grans.append((((inner_polygon[i][0]-inner_polygon[i+1][0])**2).simplify()+((inner_polygon[i][1]-inner_polygon[i+1][1])**2).simplify()).simplify())
+    else:
+        grans.append((((inner_polygon[i][0]-inner_polygon[0][0])**2).simplify()+((inner_polygon[i][1]-inner_polygon[0][1])**2).simplify()))
+
+
+
+
+#реализуем деление отрезка в заданной пропорции
+def div(inner_polygon, inner_polygon_shift, grans ,outer_polygon,cycle, lim_s):
+
+    #lim_s - ограничение отношения полученное в прошлом цикле рекурсии
+    #cycle - номер итерации рекурсии
+    #масштабный коэфициент ещё не введен
+    #длинна первой и второй внешней грани
+    outer_now = (((outer_polygon[0][0]-outer_polygon[1][0])**2).simplify()+((outer_polygon[0][1]-outer_polygon[1][1])**2).simplify()).simplify()
+    outer_next =(((outer_polygon[1][0]-outer_polygon[2][0])**2).simplify()+((outer_polygon[1][1]-outer_polygon[2][1])**2).simplify()).simplify()
+
+    #от одного до 1,n поворотов на одной грани внешнего
+    for i in range(0,len(grans)+1):
+        if i==0:
+            #s- оставшаеся растояние, которое потом пойдет в rotate и будет использоваться для коэфициента масштабирования. равно outer_now-inner_polygon_shift[0][0] - сумма grans от нуля до i
+            s=outer_polygon
+        else:
+            # s- оставшаеся растояние, которое потом пойдет в rotate и будет использоваться для коэфициента масштабирования. равно outer_now-inner_polygon_shift[0][0] - сумма grans от нуля до i
+            S=sum(grans[],)
+
+    #в какой-то момент нужно выйти на рекурсию, предварительно повернув всё, кроме inner_polygon так, что бы повтроить всё ещё раз + что бы корректно работал rotate
+
